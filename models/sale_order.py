@@ -64,6 +64,9 @@ class SaleOrder(models.Model):
                     total_qty += order_line.product_uom_qty
                     total_price += order_line.price_subtotal
                     if total_qty >= order.promotion_id.min_quantity:
+                        difference = total_qty - order.promotion_id.min_quantity
+                        #total_qty -= difference
+                        total_price -= difference * order_line.price_unit
                         discount_amount = (order.promotion_id.discount_percentage * total_price) / 100
                         category = self.env['product.category'].browse(category_id)
                         
