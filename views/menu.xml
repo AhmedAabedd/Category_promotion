@@ -1,0 +1,9 @@
+<odoo>
+
+    <menuitem id="menu_promotion_root"
+              name="Promotions"
+              parent="sale.product_menu_catalog"
+              action="action_promotion_product"
+              sequence="100"/>
+
+</odoo>
