@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 
@@ -11,13 +12,14 @@ class SaleOrder(models.Model):
     promotion_id = fields.Many2one(
         'product.product',
         domain="[('is_promotion', '=', True)]",
-        string="Promotion Name",
-        required=True
+        string="Promotion Name"
     )
 
 
     def action_add_promotion(self):
         for order in self:
+            if not order.promotion_id:
+                raise ValidationError(_("No promotion selected !"))
             # Step 0: Remove existing promotion lines and section header
             lines_to_remove = order.order_line.filtered(
                 lambda l: l.is_promotion_line or (l.display_type == 'line_section' and l.name == "Promotions")

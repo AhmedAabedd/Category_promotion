@@ -12,6 +12,7 @@ class PromotionWizard(models.TransientModel):
         'product.product',
         domain="[('is_promotion', '=', True)]",
         string="Promotions",
+        required=True
     )
 
     def action_confirm_promotion(self):
