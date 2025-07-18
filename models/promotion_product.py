@@ -10,6 +10,11 @@ class PromotionProduct(models.Model):
     discount_percentage = fields.Float(string="Discount (%)", required=True)
     min_quantity = fields.Float(string="Min Quantity")
 
+    promo_on = fields.Selection([
+        ('cheapest', 'Cheapest'),
+        ('expensive', 'More Expensive'),
+    ], default='cheapest')
+
 
 
 

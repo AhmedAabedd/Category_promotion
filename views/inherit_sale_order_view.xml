@@ -6,7 +6,7 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <button string="Promotion" type="object" name="action_add_promotion" attrs="{'invisible': [('can_apply_promotion', '=', False)]}"/>
+                <button string="Promotion" type="object" name="action_add_promotion"/>
                 <field name="can_apply_promotion" invisible="1"/>
             </field>
             <field name="fiscal_position_id" position="after">

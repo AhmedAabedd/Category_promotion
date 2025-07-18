@@ -42,6 +42,11 @@ class SaleOrder(models.Model):
 
     def action_add_promotion(self):
         for order in self:
+            # Step 0: Remove existing promotion lines and section header
+            lines_to_remove = order.order_line.filtered(
+                lambda l: l.is_promotion_line or (l.display_type == 'line_section' and l.name == "Promotions")
+            )
+            lines_to_remove.unlink()
             # Step 1: Group lines by category
             lines_by_category = {}
             for line in order.order_line:
@@ -63,7 +68,10 @@ class SaleOrder(models.Model):
                     # Sort unit prices ascending and pick cheapest eligible units
                     min_qty = int(order.promotion_id.min_quantity or 0)
                     times_applied = len(all_units) // min_qty
-                    eligible_units = sorted(all_units)[:times_applied * min_qty]
+                    if order.promotion_id.promo_on == 'cheapest':
+                        eligible_units = sorted(all_units)[:times_applied * min_qty]
+                    elif order.promotion_id.promo_on == 'expensive':
+                        eligible_units = sorted(all_units, reverse=True)[:times_applied * min_qty]
                     total_discount_base = sum(eligible_units)
                     discount_amount = (order.promotion_id.discount_percentage * total_discount_base) / 100
 
