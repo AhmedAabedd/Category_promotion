@@ -10,10 +10,15 @@
                 <field name="can_apply_promotion" invisible="1"/>
             </field>
             <field name="fiscal_position_id" position="after">
-                <group>
-                    <field name="promotion_id"/>
-                </group>
+                <field name="promotion_id"/>
             </field>
+
+            <!--<xpath expr="//field[@name='order_line']/list" position="inside">
+                <field name="is_promotion_line" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list" position="attributes">
+                <attribute name="decoration-success">is_promotion_line</attribute>
+            </xpath>-->
         </field>
     </record>
 

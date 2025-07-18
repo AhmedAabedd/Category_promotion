@@ -25,7 +25,7 @@
                         </h1>
                     </div>
                     <group>
-                        <field name="default_code" placeholder="e.g. [PROMO]"/>
+                        <field name="default_code" placeholder="e.g. PROMO"/>
                         <field name="discount_percentage"/>
                         <field name="min_quantity"/>
                     </group>
