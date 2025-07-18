@@ -28,6 +28,7 @@
                         <field name="default_code" placeholder="e.g. PROMO"/>
                         <field name="discount_percentage"/>
                         <field name="min_quantity"/>
+                        <field name="promo_on" widget="radio" options="{'horizontal': true}"/>
                     </group>
                 </sheet>
             </form>

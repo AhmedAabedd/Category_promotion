@@ -7,41 +7,22 @@ class SaleOrder(models.Model):
     _inherit = 'sale.order'
 
 
+
     promotion_id = fields.Many2one(
         'product.product',
         domain="[('is_promotion', '=', True)]",
         string="Promotion Name",
         required=True
     )
-    can_apply_promotion = fields.Boolean(compute="_compute_can_apply_promotion", store=True)
-
-    @api.depends('order_line', 'promotion_id')
-    def _compute_can_apply_promotion(self):
-        for order in self:
-            # Step 1: Group lines by category
-            lines_by_category = {}
-            for line in order.order_line:
-                category = line.product_template_id.categ_id.id
-                if not category:
-                    continue
-                if category not in lines_by_category:
-                    lines_by_category[category] = self.env['sale.order.line']
-                lines_by_category[category] += line
-
-            #step 2: Loop through grouped lines and apply logic once per category
-            for category_id, lines in lines_by_category.items():
-                total_qty = sum(lines.mapped('product_uom_qty'))
-                if total_qty >= order.promotion_id.min_quantity:
-                    order.can_apply_promotion = True
-                else:
-                    order.can_apply_promotion = False
-        print("//////////////////////// VALUE :",order.can_apply_promotion, '/////////////////////')
-
-
 
 
     def action_add_promotion(self):
         for order in self:
+            # Step 0: Remove existing promotion lines and section header
+            lines_to_remove = order.order_line.filtered(
+                lambda l: l.is_promotion_line or (l.display_type == 'line_section' and l.name == "Promotions")
+            )
+            lines_to_remove.unlink()
             # Step 1: Group lines by category
             lines_by_category = {}
             for line in order.order_line:
@@ -63,7 +44,10 @@ class SaleOrder(models.Model):
                     # Sort unit prices ascending and pick cheapest eligible units
                     min_qty = int(order.promotion_id.min_quantity or 0)
                     times_applied = len(all_units) // min_qty
-                    eligible_units = sorted(all_units)[:times_applied * min_qty]
+                    if order.promotion_id.promo_on == 'cheapest':
+                        eligible_units = sorted(all_units)[:times_applied * min_qty]
+                    elif order.promotion_id.promo_on == 'expensive':
+                        eligible_units = sorted(all_units, reverse=True)[:times_applied * min_qty]
                     total_discount_base = sum(eligible_units)
                     discount_amount = (order.promotion_id.discount_percentage * total_discount_base) / 100
 
@@ -94,63 +78,131 @@ class SaleOrder(models.Model):
                         'is_promotion_line': True,
                         'sequence': max_sequence + 1,
                     })
+    
+    def action_open_promotion_wizard(self):
+        return{
+            'type': 'ir.actions.act_window',
+            'name': 'Select Promotion',
+            'res_model': 'promotion.wizard',
+            'view_mode': 'form',
+            'target':'new',
+            'context': {
+                'default_order_id': self.id
+            }
+        }
 
 
 
-    def action_add_promotionn(self):
-        for order in self:
+    
+
+class SaleOrderLine(models.Model):
+    _inherit = 'sale.order.line'
+
+
+    is_promotion_line = fields.Boolean(default=False)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+###################### TRASH ###################################################################
+
+    #can_apply_promotion = fields.Boolean(compute="_compute_can_apply_promotion", store=True)
+
+    #@api.depends('order_line', 'promotion_id')
+    #def _compute_can_apply_promotion(self):
+        #for order in self:
+            # Step 1: Group lines by category
+            #lines_by_category = {}
+            #for line in order.order_line:
+                #category = line.product_template_id.categ_id.id
+                #if not category:
+                    #continue
+                #if category not in lines_by_category:
+                    #lines_by_category[category] = self.env['sale.order.line']
+                #lines_by_category[category] += line
+
+            #step 2: Loop through grouped lines and apply logic once per category
+            #for category_id, lines in lines_by_category.items():
+                #total_qty = sum(lines.mapped('product_uom_qty'))
+                #if total_qty >= order.promotion_id.min_quantity:
+                    #order.can_apply_promotion = True
+                #else:
+                    #order.can_apply_promotion = False
+        #print("//////////////////////// VALUE :",order.can_apply_promotion, '/////////////////////')
+
+
+
+
+
+    #def action_add_promotionn(self):
+    #    for order in self:
 
             # Step 1: Group lines by category
-            lines_by_category = {}
-            for line in order.order_line:
-                category = line.product_template_id.categ_id.id
-                if not category:
-                    continue
-                if category not in lines_by_category:
-                    lines_by_category[category] = self.env['sale.order.line']
-                lines_by_category[category] += line
+            #lines_by_category = {}
+            #for line in order.order_line:
+                #category = line.product_template_id.categ_id.id
+                #if not category:
+                    #continue
+                #if category not in lines_by_category:
+                    #lines_by_category[category] = self.env['sale.order.line']
+                #lines_by_category[category] += line
         
 
             #step 2: Loop through grouped lines and apply logic once per category
-            for category_id, lines in lines_by_category.items():
-                total_qty = 0
-                total_price = 0
-                for order_line in lines:
-                    total_qty += order_line.product_uom_qty
-                    total_price += order_line.price_subtotal
-                    if total_qty >= order.promotion_id.min_quantity:
-                        promo_section_existing = order.order_line.filtered(
-                            lambda l: l.display_type == 'line_section' and l.name == "Promotions"
-                        )
-                        if not promo_section_existing:
-                            max_sequence = max(order.order_line.mapped('sequence') or [0])
-                            self.env['sale.order.line'].create({
-                                'order_id': order.id,
-                                'display_type': 'line_section',  # Makes it a section header
-                                'name': "Promotion Discounts",
-                                'sequence': max_sequence + 1,
-                            })
+            #for category_id, lines in lines_by_category.items():
+                #total_qty = 0
+                #total_price = 0
+                #for order_line in lines:
+                    #total_qty += order_line.product_uom_qty
+                    #total_price += order_line.price_subtotal
+                    #if total_qty >= order.promotion_id.min_quantity:
+                        #promo_section_existing = order.order_line.filtered(
+                            #lambda l: l.display_type == 'line_section' and l.name == "Promotions"
+                        #)
+                        #if not promo_section_existing:
+                           #max_sequence = max(order.order_line.mapped('sequence') or [0])
+                            #self.env['sale.order.line'].create({
+                                #'order_id': order.id,
+                                #'display_type': 'line_section',  # Makes it a section header
+                                #'name': "Promotions",
+                                #'sequence': max_sequence + 1,
+                            #})
 
-                        difference = total_qty - order.promotion_id.min_quantity
+                        #difference = total_qty - order.promotion_id.min_quantity
                         #total_qty -= difference
-                        total_price -= difference * order_line.price_unit
-                        discount_amount = (order.promotion_id.discount_percentage * total_price) / 100
-                        category = self.env['product.category'].browse(category_id)
+                        #total_price -= difference * order_line.price_unit
+                        #discount_amount = (order.promotion_id.discount_percentage * total_price) / 100
+                        #category = self.env['product.category'].browse(category_id)
                         
-                        max_sequence = max(order.order_line.mapped('sequence') or [0])
+                        #max_sequence = max(order.order_line.mapped('sequence') or [0])
                         # Create promotion line
-                        self.env['sale.order.line'].create({
-                            'order_id': order.id,
-                            'product_id': order.promotion_id.id,
-                            'name': f"Promotion on {category.name} ({order.promotion_id.discount_percentage}% discount)",
-                            'price_unit': -discount_amount,
-                            'product_uom_qty': 1,
-                            'product_uom': order.promotion_id.uom_id.id,
-                            'tax_id': False,
-                            'is_promotion_line': True,  # Field added to sale.order.line model wih inheritence
-                            'sequence': max_sequence + 1,
-                        })
-                        total_qty -= order.promotion_id.min_quantity
+                        #self.env['sale.order.line'].create({
+                        #    'order_id': order.id,
+                         #   'product_id': order.promotion_id.id,
+                        #    'name': f"Promotion on {category.name} ({order.promotion_id.discount_percentage}% discount)",
+                         #   'price_unit': -discount_amount,
+                         #   'product_uom_qty': 1,
+                        #    'product_uom': order.promotion_id.uom_id.id,
+                        #    'tax_id': False,
+                        #    'is_promotion_line': True,  # Field added to sale.order.line model wih inheritence
+                        #    'sequence': max_sequence + 1,
+                        #})
+                        #total_qty -= order.promotion_id.min_quantity
 
 
 
@@ -187,9 +239,3 @@ class SaleOrder(models.Model):
     #def add_promotion(self):
     #    for rec in self:
     #        return
-
-class SaleOrderLine(models.Model):
-    _inherit = 'sale.order.line'
-
-
-    is_promotion_line = fields.Boolean(default=False)

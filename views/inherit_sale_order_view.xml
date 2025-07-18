@@ -6,19 +6,11 @@
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
             <field name="partner_id" position="after">
-                <button string="Promotion" type="object" name="action_add_promotion" invisible="can_apply_promotion == False"/>
-                <field name="can_apply_promotion" invisible="1"/>
+                <button type="object" name="action_open_promotion_wizard" string="Promotion"></button>
             </field>
             <field name="fiscal_position_id" position="after">
                 <field name="promotion_id"/>
             </field>
-
-            <!--<xpath expr="//field[@name='order_line']/list" position="inside">
-                <field name="is_promotion_line" invisible="1"/>
-            </xpath>
-            <xpath expr="//field[@name='order_line']/list" position="attributes">
-                <attribute name="decoration-success">is_promotion_line</attribute>
-            </xpath>-->
         </field>
     </record>
 

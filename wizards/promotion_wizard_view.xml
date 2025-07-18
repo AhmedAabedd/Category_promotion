@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="promotion_wizard_view_form" model="ir.ui.view">
+        <field name="name">promotion.wizard.view.form</field>
+        <field name="model">promotion.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="promotion_id" widget="radio"/>
+                </group>
+                <footer>
+                    <button type="object" name="action_confirm_promotion" string="Confirm" class="btn-primary"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_promotion_wizard" model="ir.actions.act_window">
+        <field name="name">Select Promotion</field>
+        <field name="res_model">promotion.wizard</field>
+    </record>
+
+</odoo>

@@ -1,1 +1,1 @@
-from . import promotion_select
+from . import promotion_wizard
