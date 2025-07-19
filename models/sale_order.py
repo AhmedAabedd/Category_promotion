@@ -15,6 +15,19 @@ class SaleOrder(models.Model):
         string="Promotion Name"
     )
 
+    promotion_disabled = fields.Boolean(compute='_compute_promotion_disabled')
+
+    def _compute_promotion_disabled(self):
+        # Get the parameter value (returns 'True' or 'False' as string)
+        promo_active = self.env['ir.config_parameter'].get_param('category_promotion.enable_promotions', 'False')
+        
+        # Convert to boolean (True if promo_active == 'True')
+        is_active = promo_active == 'True'
+        
+        # Set promotion_disabled to opposite of is_active
+        for order in self:
+            order.promotion_disabled = not is_active
+
 
     def action_add_promotion(self):
         for order in self:

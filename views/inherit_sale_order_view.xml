@@ -5,12 +5,14 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form"/>
         <field name="arch" type="xml">
-            <field name="partner_id" position="after">
-                <button type="object" name="action_open_promotion_wizard" string="Promotion"></button>
-            </field>
             <field name="fiscal_position_id" position="after">
                 <field name="promotion_id"/>
             </field>
+            <xpath expr="//group[@name='note_group']" position="before">
+                <div style="position: absolute; right: 210px;">
+                    <button type="object" name="action_open_promotion_wizard" string="Promotion" class="btn-primary" invisible="promotion_disabled == True"/>
+                </div>
+            </xpath>
         </field>
     </record>
 
